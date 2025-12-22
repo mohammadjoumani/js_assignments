@@ -1,6 +1,7 @@
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
+const zlib = require("node:zlib");
 
 const port = 3000;
 
@@ -36,7 +37,8 @@ readAndWriteStream();
 function pipeline() {
     const readFileStream = fs.createReadStream(path.resolve("source.txt"), { encoding: "utf-8", highwaterMark: 50 });
     const writeFileStream = fs.createWriteStream(path.resolve("dest.txt"));
-    readFileStream.pipe(writeFileStream)
+    const gzipStream = zlib.crea
+    readFileStream.pipe(gzipStream).pipe(writeFileStream)
 }
 
 pipeline();
@@ -188,11 +190,40 @@ function convertFromStringToJson(data) {
 
 //Part 2 
 /********************************
- * 1. What is the Node.js Event Loop? (0.5 Grade)
-2. What is Libuv and What Role Does It Play in Node.js? (0.5 Grade)
-3. How Does Node.js Handle Asynchronous Operations Under the Hood? (0.5 Grade)
-4. What is the Difference Between the Call Stack, Event Queue, and Event Loop in Node.js? (0.5 Grade)
-5. What is the Node.js Thread Pool and How to Set the Thread Pool Size? (0.5 Grade)
-6. How Does Node.js Handle Blocking and Non-Blocking Code Execution? (0.5 Grade)
+ 01-
+
+The Event Loop is the core mechanism in Node.js that allows it to perform non-blocking, asynchronous operations using a single thread.
+It continuously checks:
+the Call Stack
+the Event Queue
+
+02- 
+Libuv is a C library used internally by Node.js.
+Its role includes:
+managing the Event Loop
+handling asynchronous operations such as:
+file system access
+networking
+timers
+
+03- 
+- The task is delegated to Libuv
+- Libuv executes it using: the operating system (for I/O) or the thread pool
+- Once completed, the callback is placed into the Event Queue
+- The Event Loop pushes it to the Call Stack for execution
+
+04- 
+- Call Stack: Executes synchronous code in a Last-In-First-Out (LIFO) order.
+- Event Queue: Holds callbacks of completed asynchronous tasks waiting to be executed.
+- Event Loop: Continuously monitors the Call Stack and Event Queue, moving tasks to the Call Stack when it is empty.
+
+05- 
+The Thread Pool is a set of worker threads provided by Libuv to handle heavy operations
+
+The default size is 4 threads.
+
+06- 
+Blocking Code: Blocks the Event Loop and prevents other code from executing.
+Non-Blocking Code: Is executed asynchronously and does not block the Event Loop.
 
  *********************************/
